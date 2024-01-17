@@ -7,12 +7,13 @@ import { createContext, useReducer, useContext } from 'react';
 
 const initialState = {
   currentTime: 0,
-  highScore3: localStorage.getItem("score3x3") ?? 0,
-  highScore4: localStorage.getItem("score4x4") ?? 0,
-  highScore5: localStorage.getItem("score5x5") ?? 0,
-  highScore6: localStorage.getItem("score6x6") ?? 0,
+  highScore3: parseInt(localStorage.getItem("score3x3")) || 0,
+  highScore4: parseInt(localStorage.getItem("score4x4")) || 0,
+  highScore5: parseInt(localStorage.getItem("score5x5")) || 0,
+  highScore6: parseInt(localStorage.getItem("score6x6")) || 0,
 };
 
+console.log(initialState)
 
 const AppContext = createContext();
 
@@ -27,10 +28,7 @@ const reducer = (state, action) => {
       };
 
       case 'UPDATE_HIGH_SCORE':
-      console.log(action.payload)
       let score = state[`highScore${action.payload}`];
-      console.log(score);
-      console.log(state.currentTime);
 
       if (state.currentTime < score) {
         localStorage.setItem(`score${action.payload}x${action.payload}`, state.currentTime);

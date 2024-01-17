@@ -46,6 +46,7 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
       if (solved(newArray)) {
          clearInterval(intervalId,1000);
          dispatch({type: 'UPDATE_HIGH_SCORE',payload : gridSize});
+        //  console.log(state);
       }
       setArray(newArray);
     }
