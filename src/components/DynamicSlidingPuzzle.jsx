@@ -1,4 +1,4 @@
-import GeneratePieces from "./generatePieces";
+import GeneratePieces from "./GeneratePieces"
 
 /* eslint-disable react/prop-types */
 const DynamicSlidingPuzzle = ({ imageUrl, gridSize ,showNumber}) => {
