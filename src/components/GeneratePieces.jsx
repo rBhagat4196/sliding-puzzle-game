@@ -79,7 +79,7 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
     <div className="flex flex-col">
 
     <div
-      className="grid gap-1 border-4 border-[#b6744a]"
+      className="grid gap-1 border-4 border-[#b6744a] rounded-lg"
       style={!solved(array) ? { gridTemplateColumns, gridTemplateRows } : {}}>
       {!solved(array) &&
         array.map((value) =>
@@ -112,7 +112,7 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
         <img src={imageUrl} className="w-[500px] h-[500px]"></img>
         )}
     </div>
-       <button className="mx-auto mt-[5px] rounded-lg h-[40px] w-[100px] p-1 bg-blue-400 font-bold text-white border-blue-500 border-2" onClick={handleRestart}>Restart</button>
+       <button className="mx-auto mt-[10px] rounded-lg h-[40px] w-[100px] p-1 bg-blue-400 font-bold text-white border-blue-500 border-2" onClick={handleRestart}>Restart</button>
         </div>
     </>
   );
