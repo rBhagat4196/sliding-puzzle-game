@@ -12,7 +12,11 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
   useEffect(() => {
     setArray(arrayGeneration(gridSize));
     setTicking(false);
-    setIntervalId(null)
+    setIntervalId(null);
+    if (intervalId) {
+      clearInterval(intervalId,1000);
+    }
+    dispatch({type : 'UPDATE_CURRENT_SCORE' , payload : 0})
   }, [gridSize, imageUrl,reset]);
 
   const pieceSize = 500 / gridSize; // Adjust the size based on the container size
