@@ -30,8 +30,8 @@ function App() {
       <h1 className="text-center pt-5 mb-10 text-3xl font-bold text-white">
         Sliding Puzzle Game
       </h1>
-      <div className="flex flex-col lg:flex-row items-center justify-center">
-        <div className="w-full lg:w-[300px] bg-white p-4 rounded-md shadow-md">
+      <div className="flex flex-col gap-2 lg:gap-4 lg:flex-row items-center justify-center">
+        <div className="w-[300px] bg-white p-4 rounded-md shadow-md">
           <h1 className="text-xl font-bold mb-4 text-gray-800">
             Set Difficulty
           </h1>
