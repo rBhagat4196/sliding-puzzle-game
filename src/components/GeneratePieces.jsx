@@ -13,16 +13,32 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
   const [intervalId, setIntervalId] = useState(null);
   const [solving, setSolving] = useState(false);
   const [aiThinking, setAiThinking] = useState(false); // For AI thinking message
+  const [timer, setTimer] = useState(0); // Timer state
+  const [timerIntervalId, setTimerIntervalId] = useState(null); // Timer interval ID
 
   useEffect(() => {
     setArray(arrayGeneration(gridSize));
     setTicking(false);
     setIntervalId(null);
     if (intervalId) {
-      clearInterval(intervalId, 1000);
+      clearInterval(intervalId);
     }
     dispatch({ type: "UPDATE_CURRENT_SCORE", payload: 0 });
   }, [gridSize, imageUrl, reset]);
+
+  useEffect(() => {
+    if (solving) {
+      // Start the timer when solving begins
+      setTimer(0);
+      const id = setInterval(() => setTimer(prev => prev + 1), 1000);
+      setTimerIntervalId(id);
+
+      return () => clearInterval(id); // Cleanup timer on unmount
+    } else if (timerIntervalId) {
+      // Stop the timer when solving ends
+      clearInterval(timerIntervalId);
+    }
+  }, [solving]);
 
   const pieceSize = 500 / gridSize; // Adjust the size based on the container size
   const bgSize = gridSize * 100;
@@ -46,7 +62,7 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
       newArray[index] = " ";
       newArray[emptyIndex] = id;
       if (solved(newArray)) {
-        clearInterval(intervalId, 1000);
+        clearInterval(intervalId);
         dispatch({ type: "UPDATE_HIGH_SCORE", payload: gridSize });
       }
       setArray(newArray);
@@ -75,7 +91,7 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
   }
 
   const handleRestart = () => {
-    clearInterval(intervalId, 1000);
+    clearInterval(intervalId);
     setReset((prev) => !prev);
     dispatch({ type: "UPDATE_CURRENT_SCORE", payload: 0 });
   };
@@ -84,15 +100,15 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
   const autoSolvePuzzle = async () => {
     setAiThinking(true); // Show "AI is thinking" message
     setSolving(true);
-    
 
     try {
+      console.log(array)
       // Await the solveSlidingPuzzle function
       const solutionMoves = await solveSlidingPuzzle(array, gridSize);
-      
+
       // Process the solution moves
       for (let move of solutionMoves) {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // 500ms delay between moves
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // 1000ms delay between moves
         setArray((prevArray) => {
           const newArray = [...prevArray];
           const emptyIndex = newArray.indexOf(" ");
@@ -161,6 +177,13 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
         {aiThinking && (
           <div className="mt-4 text-center text-lg font-semibold text-red-500">
             AI is Solving...
+          </div>
+        )}
+
+        {/* Timer Display */}
+        {solving && (
+          <div className="mt-4 text-center text-lg font-semibold text-green-500">
+            Time Elapsed: {Math.floor(timer / 60)}:{("0" + (timer % 60)).slice(-2)}
           </div>
         )}
       </div>
