@@ -47,12 +47,22 @@ function calculateCost(state, goalState, gridSize) {
   return cost;
 }
 
+// Function to construct the path from root to the solution
+function constructPath(node) {
+  const path = [];
+  while (node) {
+    path.push(node.state);
+    node = node.parent;
+  }
+  return path.reverse(); // Reverse to get the path from start to goal
+}
+
 // A* search algorithm to solve the sliding puzzle
 async function solveSlidingPuzzle(initialState, gridSize) {
   const goalState = Array.from({ length: gridSize * gridSize - 1 }, (_, i) => i + 1).concat(" ");
-  console.log(goalState)
   const startNode = {
     state: initialState,
+    parent: null,
     moves: [],
     level: 0,
     cost: calculateCost(initialState, goalState, gridSize),
@@ -67,7 +77,7 @@ async function solveSlidingPuzzle(initialState, gridSize) {
 
     const stateKey = currentNode.state.join(",");
     if (stateKey === goalState.join(",")) {
-      return currentNode.moves;
+      return constructPath(currentNode);
     }
 
     if (!visited.has(stateKey)) {
@@ -77,6 +87,7 @@ async function solveSlidingPuzzle(initialState, gridSize) {
       for (const { state: nextState, move } of nextStates) {
         const newNode = {
           state: nextState,
+          parent: currentNode,
           moves: [...currentNode.moves, move],
           level: currentNode.level + 1,
           cost: calculateCost(nextState, goalState, gridSize),
