@@ -30,7 +30,7 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
     if (solving) {
       // Start the timer when solving begins
       setTimer(0);
-      const id = setInterval(() => setTimer(prev => prev + 1), 1000);
+      const id = setInterval(() => setTimer((prev) => prev + 1), 1000);
       setTimerIntervalId(id);
 
       return () => clearInterval(id); // Cleanup timer on unmount
@@ -49,7 +49,12 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
     if (!ticking) {
       setTicking(true);
       if (!intervalId) {
-        setIntervalId(setInterval(() => dispatch({ type: "UPDATE_CURRENT_SCORE", payload: 1 }), 1000));
+        setIntervalId(
+          setInterval(
+            () => dispatch({ type: "UPDATE_CURRENT_SCORE", payload: 1 }),
+            1000
+          )
+        );
       }
     }
     const target = e.target;
@@ -102,10 +107,11 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
     setSolving(true);
 
     try {
-      console.log(array)
+      console.log(array);
       // Await the solveSlidingPuzzle function
+      await new Promise(resolve => setTimeout(resolve, 100))
       const solutionMoves = await solveSlidingPuzzle(array, gridSize);
-
+      console.log(solutionMoves);
       // Process the solution moves
       for (let move of solutionMoves) {
         await new Promise((resolve) => setTimeout(resolve, 1000)); // 1000ms delay between moves
@@ -130,7 +136,9 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
       <div className="flex flex-col">
         <div
           className="grid gap-1 border-4 border-[#b6744a] rounded-lg"
-          style={!solved(array) ? { gridTemplateColumns, gridTemplateRows } : {}}
+          style={
+            !solved(array) ? { gridTemplateColumns, gridTemplateRows } : {}
+          }
         >
           {!solved(array) &&
             array.map((value) =>
@@ -140,7 +148,10 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
                   className={`w-[${pieceSize}px] h-[${pieceSize}px] text-center text-white flex justify-center items-center`}
                   style={{
                     backgroundImage: `url('${imageUrl}')`,
-                    backgroundPosition: CalculateBackgroundPosition(gridSize, value - 1),
+                    backgroundPosition: CalculateBackgroundPosition(
+                      gridSize,
+                      value - 1
+                    ),
                     backgroundSize: `${bgSize}%  ${bgSize}%`,
                     border: "1px solid #ccc",
                   }}
@@ -150,10 +161,19 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
                   {showNumber && value}
                 </div>
               ) : (
-                <div key={value} className={`w-[${pieceSize}px] h-[${pieceSize}px] bg-[#c29478]`} />
+                <div
+                  key={value}
+                  className={`w-[${pieceSize}px] h-[${pieceSize}px] bg-[#c29478]`}
+                />
               )
             )}
-          {solved(array) && <img src={imageUrl} className="w-[500px] h-[500px]" alt="Solved Puzzle" />}
+          {solved(array) && (
+            <img
+              src={imageUrl}
+              className="w-[500px] h-[500px]"
+              alt="Solved Puzzle"
+            />
+          )}
         </div>
 
         {/* Restart Button */}
@@ -172,18 +192,23 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
         >
           {solving ? "Solving..." : "Auto-Solve"}
         </button>
+        <p className=" mt-5 text-gray-700 text-sm md:text-base font-medium bg-gray-100 p-4 rounded-lg shadow-md whitespace-pre-line">
+          More the grid size, longer the computing time.<br/> For 5x5 or 6x6, it may
+          take more than a minute to compute.
+        </p>
 
         {/* AI Thinking Message */}
         {aiThinking && (
-          <div className="mt-4 text-center text-lg font-semibold text-red-500">
+          <div className="mt-2 text-center text-lg font-semibold text-red-500">
             AI is Solving...
           </div>
         )}
 
         {/* Timer Display */}
         {solving && (
-          <div className="mt-4 text-center text-lg font-semibold text-green-500">
-            Time Elapsed: {Math.floor(timer / 60)}:{("0" + (timer % 60)).slice(-2)}
+          <div className=" text-center text-lg font-semibold text-green-500">
+            Time Elapsed: {Math.floor(timer / 60)}:
+            {("0" + (timer % 60)).slice(-2)}
           </div>
         )}
       </div>
