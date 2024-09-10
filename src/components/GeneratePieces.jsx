@@ -3,21 +3,26 @@ import { useState, useEffect } from "react";
 import arrayGeneration from "./arrayGeneration";
 import CalculateBackgroundPosition from "./CalculateBackgroundPosition";
 import { useAppContext } from "../context/scoreContext";
+import solveSlidingPuzzle from "../utils/ai"; // Solver function
+
 const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
-  const {dispatch} = useAppContext(); 
-  const [ticking,setTicking] = useState(false);
+  const { dispatch } = useAppContext();
+  const [ticking, setTicking] = useState(false);
   const [array, setArray] = useState([]);
-  const [reset,setReset] = useState(true);
-  const [intervalId,setIntervalId] = useState(null);
+  const [reset, setReset] = useState(true);
+  const [intervalId, setIntervalId] = useState(null);
+  const [solving, setSolving] = useState(false);
+  const [aiThinking, setAiThinking] = useState(false); // For AI thinking message
+
   useEffect(() => {
     setArray(arrayGeneration(gridSize));
     setTicking(false);
     setIntervalId(null);
     if (intervalId) {
-      clearInterval(intervalId,1000);
+      clearInterval(intervalId, 1000);
     }
-    dispatch({type : 'UPDATE_CURRENT_SCORE' , payload : 0})
-  }, [gridSize, imageUrl,reset]);
+    dispatch({ type: "UPDATE_CURRENT_SCORE", payload: 0 });
+  }, [gridSize, imageUrl, reset]);
 
   const pieceSize = 500 / gridSize; // Adjust the size based on the container size
   const bgSize = gridSize * 100;
@@ -25,17 +30,14 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
   const gridTemplateRows = `repeat(${gridSize}, ${pieceSize}px)`;
 
   const handleClick = (e) => {
-
     if (!ticking) {
       setTicking(true);
       if (!intervalId) {
-        setIntervalId(setInterval(() => dispatch({ type: 'UPDATE_CURRENT_SCORE' ,payload:1}), 1000));
+        setIntervalId(setInterval(() => dispatch({ type: "UPDATE_CURRENT_SCORE", payload: 1 }), 1000));
       }
     }
     const target = e.target;
     const id = parseInt(target.getAttribute("value"));
-    // console.log(array)
-    // console.log(id)
     const index = Array.from(array).findIndex((piece) => piece === id);
     const emptyIndex = Array.from(array).findIndex((piece) => piece === " ");
 
@@ -44,9 +46,8 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
       newArray[index] = " ";
       newArray[emptyIndex] = id;
       if (solved(newArray)) {
-         clearInterval(intervalId,1000);
-         dispatch({type: 'UPDATE_HIGH_SCORE',payload : gridSize});
-        //  console.log(state);
+        clearInterval(intervalId, 1000);
+        dispatch({ type: "UPDATE_HIGH_SCORE", payload: gridSize });
       }
       setArray(newArray);
     }
@@ -73,52 +74,96 @@ const GeneratePieces = ({ gridSize, imageUrl, showNumber }) => {
     return true;
   }
 
-  const handleRestart = ()=>{
-    clearInterval(intervalId,1000);
+  const handleRestart = () => {
+    clearInterval(intervalId, 1000);
     setReset((prev) => !prev);
-    dispatch({ type: 'UPDATE_CURRENT_SCORE',payload : 0})
-  }
+    dispatch({ type: "UPDATE_CURRENT_SCORE", payload: 0 });
+  };
+
+  // Auto-solve logic with "AI thinking..." state
+  const autoSolvePuzzle = async () => {
+    setAiThinking(true); // Show "AI is thinking" message
+    setSolving(true);
+    
+
+    try {
+      // Await the solveSlidingPuzzle function
+      const solutionMoves = await solveSlidingPuzzle(array, gridSize);
+      
+      // Process the solution moves
+      for (let move of solutionMoves) {
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // 500ms delay between moves
+        setArray((prevArray) => {
+          const newArray = [...prevArray];
+          const emptyIndex = newArray.indexOf(" ");
+          newArray[emptyIndex] = move;
+          newArray[prevArray.indexOf(move)] = " ";
+          return newArray;
+        });
+      }
+    } catch (error) {
+      console.error("Error while solving puzzle: ", error);
+    } finally {
+      setSolving(false);
+      setAiThinking(false); // Hide "AI is thinking" message when done
+    }
+  };
 
   return (
     <>
-    <div className="flex flex-col">
-
-    <div
-      className="grid gap-1 border-4 border-[#b6744a] rounded-lg"
-      style={!solved(array) ? { gridTemplateColumns, gridTemplateRows } : {}}>
-      {!solved(array) &&
-        array.map((value) =>
-          value !== " " ? (
-            <div
-              key={value}
-              className={`w-[${pieceSize}px] h-[${pieceSize}px] text-center text-white flex justify-center items-center`}
-              style={{
-                backgroundImage: `url('${imageUrl}')`,
-                backgroundPosition: CalculateBackgroundPosition(
-                  gridSize,
-                  value - 1
-                  ),
-                backgroundSize: `${bgSize}%  ${bgSize}%`,
-                border: "1px solid #ccc",
-              }}
-              value={value}
-              onClick={handleClick}
-            >
-              {showNumber && value}
-            </div>
-          ) : (
-            <div
-              key={value}
-              className={`w-[${pieceSize}px] h-[${pieceSize}px] bg-[#c29478]`}
-              />
+      <div className="flex flex-col">
+        <div
+          className="grid gap-1 border-4 border-[#b6744a] rounded-lg"
+          style={!solved(array) ? { gridTemplateColumns, gridTemplateRows } : {}}
+        >
+          {!solved(array) &&
+            array.map((value) =>
+              value !== " " ? (
+                <div
+                  key={value}
+                  className={`w-[${pieceSize}px] h-[${pieceSize}px] text-center text-white flex justify-center items-center`}
+                  style={{
+                    backgroundImage: `url('${imageUrl}')`,
+                    backgroundPosition: CalculateBackgroundPosition(gridSize, value - 1),
+                    backgroundSize: `${bgSize}%  ${bgSize}%`,
+                    border: "1px solid #ccc",
+                  }}
+                  value={value}
+                  onClick={handleClick}
+                >
+                  {showNumber && value}
+                </div>
+              ) : (
+                <div key={value} className={`w-[${pieceSize}px] h-[${pieceSize}px] bg-[#c29478]`} />
               )
-              )}
-      {solved(array) && (
-        <img src={imageUrl} className="w-[500px] h-[500px]"></img>
-        )}
-    </div>
-       <button className="mx-auto mt-[10px] rounded-lg h-[40px] w-[100px] p-1 bg-blue-400 font-bold text-white border-blue-500 border-2" onClick={handleRestart}>Restart</button>
+            )}
+          {solved(array) && <img src={imageUrl} className="w-[500px] h-[500px]" alt="Solved Puzzle" />}
         </div>
+
+        {/* Restart Button */}
+        <button
+          className="mx-auto mt-[10px] rounded-lg h-[40px] w-[100px] p-1 bg-blue-400 font-bold text-white border-blue-500 border-2"
+          onClick={handleRestart}
+        >
+          Restart
+        </button>
+
+        {/* Auto-Solve Button */}
+        <button
+          className="mx-auto mt-[10px] rounded-lg h-[40px] w-1/2 p-1 bg-gradient-to-r from-red-400 to-blue-400 font-bold border-2 text-white"
+          onClick={autoSolvePuzzle}
+          disabled={solving}
+        >
+          {solving ? "Solving..." : "Auto-Solve"}
+        </button>
+
+        {/* AI Thinking Message */}
+        {aiThinking && (
+          <div className="mt-4 text-center text-lg font-semibold text-red-500">
+            AI is Solving...
+          </div>
+        )}
+      </div>
     </>
   );
 };

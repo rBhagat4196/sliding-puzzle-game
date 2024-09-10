@@ -5,10 +5,11 @@ import Scores from "./components/Scores";
 
 function App() {
   const defaultImage =
-    "https://a99d0ae3-3d68-4a52-a3c2-fea580e42708-00-35h6qcjm4i6au.kirk.replit.dev/image.jpeg";
+    "https://firebasestorage.googleapis.com/v0/b/imageurl-d1144.appspot.com/o/507ede61-4d09-4008-81e3-0c8c2973cf0d?alt=media&token=aeae3f87-30a9-4c01-882d-81966fe51d04://a99d0ae3-3d68-4a52-a3c2-fea580e42708-00-35h6qcjm4i6au.kirk.replit.dev/image.jpeg";
   const [imageUrl, setImageUrl] = useState(defaultImage);
   const [gridSize, setGridSize] = useState(3);
   const [showNumber, setShowNumber] = useState(true);
+
 
   function handleSelectChange(e) {
     const data = e.target.value;
@@ -93,6 +94,7 @@ function App() {
           />
         </div>
         <Scores />
+ 
       </div>
     </div>
   );
